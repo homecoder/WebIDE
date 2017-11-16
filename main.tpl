@@ -17,11 +17,13 @@
                 var editor = CodeMirror.fromTextArea(document.getElementById("codemirror"), {
                     lineNumbers: true,
                     theme: "solarized light",
+                    tabSize: 4,
                     <%if defined('filename'):
                         import os.path
                         ext = os.path.splitext(filename)[1][1:]
                         if ext == 'py':%>
-                            mode: "python"
+                            mode: "python",
+                            tabSize: 4
                         %elif ext in ['json', 'pyui']:
                             mode: {name: "javascript", json: true}
                         %else:
@@ -78,7 +80,21 @@
                         %end
                     </div>
                     <button id="submit" type="submit" class="btn btn-default base01-color base3-background">Save</button>
+                    
+                    %if defined('filename'):
+                	<input id="runfilename" name="filename" value="{{ filename }}" type="hidden" />
+					<button id="submit" type="submit" name="runfile" value="runfile" class="btn btn-default base01-color base3-background">Run on iOS</button>
+                %end
+                
                 </form>
+                <form action="/run" class="navbar-form navbar-left" role="run" id="run" method="post">
+                <div class="form-group">
+                %if defined('filename'):
+                	<input id="runfilename" name="filename" value="{{ filename }}" type="hidden" />
+					<button id="submit" type="submit" name="runfile" value="runfile" class="btn btn-default base01-color base3-background">Run on iOS</button>
+                %end
+                </div>
+				</form>
             </div><!-- /.container-fluid -->
         </nav>
 
