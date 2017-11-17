@@ -1,29 +1,21 @@
+# -*- coding: utf-8 -*-
+
 from bottle import get, post, route, run, debug, template, request, static_file, error, \
     redirect  # Import bottle's functions (from bottle import * might be better)
 import os, socket, errno, sys  # Import standard python libraries that we need
 
 ### Add Options ###
 
-"""
-Added options for use with Pythonista Web IDE:
-    * enable_bonjour - Enable Bonjour broadcast - Set to False if using at work
-    * enable_run - Provide a button for 'Save & Run'
-    * enable_run_saved - Provide a button to run last saved copy
-      WARNING: This does not save prior to running, if Pythonista crashes you may experience unexpected results!
-               Use at your own RISK!
 
-Added options for use with run 
-    * object_debug - Send back the dump of objects used in your script
-    * eval_object_debug - Convert the object_debug text to json
-"""
-ENABLE_BONJOUR=False
-DISABLE_IPHONE_SLEEP=True
-ENABLE_RUN=True
-ENABLE_RUN_NOSAVE=False
-ENABLE_RUB_OBJECT_DEBUG=False
-IGNORE_RUN_ERRORS=False
-SET_NAME_MAIN=True
-
+WEB_IDE_DEBUG = False
+ENABLE_BONJOUR = False
+DISABLE_IPHONE_SLEEP = True
+ENABLE_RUN = True
+ENABLE_RUN_NOSAVE = False
+ENABLE_RUN_OBJECT_DEBUG = False
+OBJECT_DEBUG_FULL = False
+IGNORE_RUN_ERRORS = False
+SET_NAME_MAIN = True
 
 ############################################
 
@@ -34,7 +26,7 @@ except ImportError:
 
 try:  # Try to import Pythonista specific libraries
     import editor  # For reloading files in pythonista
-    import console # For disable iphone sleep
+    import console  # For disable iphone sleep
     from objc_util import *  # Magic Bonjour stuff (idk how this really works :P)
 
     PYTHONISTA = True  # Yep, we're running in Pythonista!
@@ -85,11 +77,12 @@ def make_file_tree(dir_path=ROOT):  # Make a dict of the folder hierarchy (start
     recur(dir_path, file_dict)  # Start the chain reaction
     return file_dict  # And then return our baby tree (they grow up so fast *sniffle*)
 
+
 # Run on Pythonista
 def ide_exec_handle_exc(exc):
     """
     Parse exceptions from run so they don't kill the IDE
-    
+
     :param exc Exception object
     :example
         try:
@@ -97,7 +90,7 @@ def ide_exec_handle_exc(exc):
         except AttributeError as e:
             errors = ide_exec_handle_exc(e)
         except Exception as e:
-            errors = ide_exec_handle_exc(e)   
+            errors = ide_exec_handle_exc(e)
     """
     # This needs revamped
     look_for = ['code', 'message']
@@ -106,6 +99,7 @@ def ide_exec_handle_exc(exc):
     for item in look_for:
         if hasattr(exc, item): out.update({item: getattr(exc, item)})
     return out
+
 
 # Import runpy, execute script
 
@@ -130,6 +124,12 @@ def run_script(filename):
         return True
     except Exception as e:
         return ide_exec_handle_exc(e)
+
+
+@get('/static/<filepath:path>')  # Map this function to any GET request in the /static folder
+def server_static(filepath):  # This function will just return anything in the /static folder
+    return static_file(filepath, root='./static')  # Return whatever was requested
+
 
 @get('/')  # Map this function to the root of the website for GET requests
 def edit():  # This function will get called for each GET request to /
@@ -156,7 +156,7 @@ def submit():  # This function will get called for each POST request to /
     filename = request.forms.get('filename')  # Get the name of the file we are writing to
     fullname = os.path.realpath(os.path.join(ROOT, filename))  # Get the full path (relative to /, not ROOT this time)
     if fullname.startswith(ROOT):  # If our file is in ROOT...
-        with open(fullname, encoding='utf-8', mode='w') as f:  # Then open the file...      
+        with open(fullname, encoding='utf-8', mode='w') as f:  # Then open the file...
             f.write(request.forms.get('code').replace('\r', ''))  # And dump our code into it
         if PYTHONISTA:  # And if we are in Pythonista
             editor.reload_files()  # Then we need to reload the files so our newly edited file is visible
@@ -171,16 +171,12 @@ def submit():  # This function will get called for each POST request to /
                     if web_ide_options['object_debug']:
                         code = request.forms.get('code')
                         return template('./main.tpl', files=make_file_tree(ROOT), error=run_data, filename=filename,
-                                        code=code) 
+                                        code=code)
                 except:
                     pass
     else:  # If it's not a valid file...
         return template('./main.tpl', files=make_file_tree(ROOT),
                         error='Invalid filename')  # Yell at the user some more
-
-@get('/static/<filepath:path>')  # Map this function to any GET request in the /static folder
-def server_static(filepath):  # This function will just return anything in the /static folder
-    return static_file(filepath, root='./static')  # Return whatever was requested
 
 
 @error(403)  # Bind the error403 function to the 403 error code
@@ -205,7 +201,7 @@ def get_local_ip_addr():  # Get the local ip address of the device
 print('''\nTo remotely edit files:
    On your computer open a web browser to http://{}:8080'''.format(get_local_ip_addr()))  # Print out some instructions
 
-debug(True)  # Set debugging mode to true (shows detailed errors and such)
+debug(WEB_IDE_DEBUG)  # Set debugging mode to true (shows detailed errors and such)
 if PYTHONISTA:  # If we are running in Pythonista...
 
     if ENABLE_BONJOUR:
@@ -217,8 +213,8 @@ if PYTHONISTA:  # If we are running in Pythonista...
         try:  # Try to publish our service (I guess)
             if DISABLE_IPHONE_SLEEP:
                 console.set_idle_timer_disabled(True)
-                
-            service.publish() # Publish our service so Bonjour things can find it
+
+            service.publish()  # Publish our service so Bonjour things can find it
             run(reloader=False,
                 host='0.0.0.0')  # And finally run the actual site (without reloading, as that doesn't work in Pythonista)
         finally:  # When all is said and done...
@@ -229,15 +225,15 @@ if PYTHONISTA:  # If we are running in Pythonista...
         try:
             if DISABLE_IPHONE_SLEEP:
                 console.set_idle_timer_disabled(True)
-            
+
             # Run the web server
             run(reloader=False,
                 host='0.0.0.0')  # And finally run the actual site (without reloading, as that doesn't work in Pythonista)
         finally:  # When all is said and done...
-            # 
+            #
             if DISABLE_IPHONE_SLEEP:
                 console.set_idle_timer_disabled(False)
-            
+
 else:  # Looks like we're running on a normal computer...
     try:  # This block will try to run with reloading, and fall back gracefully if it isn't supported
         run(reloader=True, host='0.0.0.0')  # Try to run the site with reloading
@@ -246,3 +242,4 @@ else:  # Looks like we're running on a normal computer...
             run(reloader=False, host='0.0.0.0')  # Then run the site without reloading
         else:  # The error wasn't related to reloading
             raise e  # So raise it back up again
+
