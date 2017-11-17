@@ -29,7 +29,7 @@ except ImportError:
 
 class Config (object):
 
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'config')
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data')
     config_filename = 'WebIDE_config.json'
     config = None
     serializer = None
