@@ -61,7 +61,7 @@ class Config (object):
 
         try:
             with open(self.full_config) as f:
-                config = f.read()
+                config = json.load(f)
         except IOError:
             pass
         except Exception as e:
@@ -72,18 +72,23 @@ class Config (object):
             try:
                 # Okay, the config doesn't exist, let's create a default set
                 os.mkdir(self.config_path)
+            except Exception as e:
+                six.reraise(BaseException,e)
+
+        if not os.path.exists(self.full_config):
+            try:
                 self.config = {
                     'config' : self.base_config,
                     'config_descriptions' : self.base_config_descriptions,
                 }
 
                 with open(self.full_config,'w') as conf:
-                    json.dump(conf,indent=2)
+                    json.dump(self.config,conf,indent=2)
             except Exception as e:
                 six.reraise(BaseException, e)
 
         # Now everythign should be there fine!
 
 
-
-Config()
+if __name__ == '__main__':
+    Config()
