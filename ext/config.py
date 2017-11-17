@@ -9,9 +9,9 @@ Rationale:
     From there - I decided to create a much LARGER version of WebIDE, with some updates to make my life easier.
 """
 # System imports
-import os, json, six, sys
+import os, json, six
 
-# Let's try to import some YAML
+# Let's try to import some YAML - This will be used to export the config (optional)
 HAS_YAML=False
 
 try:
@@ -25,14 +25,12 @@ except ImportError:
     except ImportError:
         pass
 
-
-
 # Configuration Module
 
 class Config (object):
 
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'config')
-    config_filename = 'WebIDE_config'
+    config_filename = 'WebIDE_config.json'
     config = None
     serializer = None
 
@@ -58,10 +56,11 @@ class Config (object):
 
 
     def __init__(self):
-        # Safety check, make sure no period in the end of the filename, yeah, I did that before.
+        # Setup the filename with path & filename
+        self.full_config = os.path.join(self.config_path,self.config_filename)
 
         try:
-            with open(self.config_filename) as f:
+            with open(self.full_config) as f:
                 config = f.read()
         except IOError:
             pass
@@ -71,9 +70,20 @@ class Config (object):
         # Check if folder exist
         if not os.path.exists((self.config_path)):
             try:
+                # Okay, the config doesn't exist, let's create a default set
                 os.mkdir(self.config_path)
+                self.config = {
+                    'config' : self.base_config,
+                    'config_descriptions' : self.base_config_descriptions,
+                }
 
+                with open(self.full_config,'w') as conf:
+                    json.dump(conf,indent=2)
             except Exception as e:
                 six.reraise(BaseException, e)
 
+        # Now everythign should be there fine!
 
+
+
+Config()
