@@ -48,12 +48,11 @@ class Config (object):
 
     base_config_descriptions = {
         'web_ide_debug_mode' : 'Enable Debug Mode in Web IDE (Bottle Debug mode)',
-        'enable_bonjour' : 'Enable Bonjour - <a href="help:bonjour">More Information</a>',
+        'enable_bonjour' : 'Enable Bonjour',
         'disable_device_sleep' : 'Prevent your iPhone/iPad/iPod from sleeping while running WebIDE',
-        'enable_run' : 'Enable "Run" from WebIDE - Run the script you are working on in Pythonista. '
-                       '<a href="help:enable_run">More Information"</a>',
+        'enable_run' : 'Enable "Run" from WebIDE - Run the script you are working on in Pythonista. ',
         'run_export_globals' : "Return a list of globals initialized by apps you run with Run feature.",
-        'run_export_globals_internals' : False,
+        'run_export_globals_internals' : "Include internals like __builtins__ with the export globals report.",
         'run_set_name' : '__main__',
     }
 
