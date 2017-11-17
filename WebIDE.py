@@ -20,7 +20,7 @@ SET_NAME_MAIN = True
 ############################################
 
 try:
-    from urllib.request import pathname2url  # Try to import pathname2url from the python 3 location
+    from six.moves.urllib.request import pathname2url  # Try to import pathname2url from the python 3 location
 except ImportError:
     from urllib import pathname2url  # Whoops, looks like we're python 2
 
